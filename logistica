@@ -1,0 +1,65 @@
+class EmpresaLogistica:
+    def __init__(self, capital_inicial, demanda_inicial, reputacion_inicial, flota_inicial):
+        self.capital = capital_inicial
+        self.reputacion = reputacion_inicial
+        self.flota = flota_inicial
+        self.demanda = demanda_inicial
+        self.costos_mantenimiento = 5000  # Gasto más alto debido al tamaño
+        self.costos_marketing = 3000
+        self.precio_servicio = 150
+        self.ingresos = 0
+        self.gastos = 0
+
+    def ajustar_variables(self, mantenimiento, marketing, precio, inversion):
+        self.costos_mantenimiento += mantenimiento
+        self.costos_marketing += marketing
+        self.precio_servicio = precio
+        self.capital -= inversion
+
+    def simular_trimestre(self):
+        # Ajustar demanda según marketing y precio
+        self.demanda += self.costos_marketing // 100 - self.precio_servicio // 10
+        self.demanda = max(0, self.demanda)  # Evitar demanda negativa
+
+        # Ingresos y costos
+        self.ingresos = self.demanda * self.precio_servicio
+        self.gastos = self.costos_mantenimiento + self.costos_marketing + (self.flota * 100)
+
+        # Ajustar capital
+        self.capital += self.ingresos - self.gastos
+
+        # Ajustar reputación según la inversión y mantenimiento
+        self.reputacion += (self.costos_mantenimiento // 5000) - 0.05
+        self.reputacion = max(0, min(1, self.reputacion))  # Limitar reputación entre 0 y 1
+
+        # Verificar si la empresa entra en bancarrota
+        if self.capital < 10000:
+            print("La empresa ha entrado en bancarrota.")
+            return False
+
+        # Reportar el estado
+        self.mostrar_estado()
+        return True
+
+    def mostrar_estado(self):
+        print(f"Capital Actual: ${self.capital}")
+        print(f"Demanda: {self.demanda} servicios/mes")
+        print(f"Reputación: {self.reputacion:.2f}")
+        print(f"Flota: {self.flota} vehículos")
+        print(f"Ingresos: ${self.ingresos}")
+        print(f"Gastos: ${self.gastos}\n")
+
+# Ejemplo de uso - Escenario 1
+empresa = EmpresaLogistica(capital_inicial=200000, demanda_inicial=500, reputacion_inicial=0.8, flota_inicial=30)
+
+for trimestre in range(1, 13):  # Desde el año 2 al 5 (12 trimestres)
+    print(f"--- Trimestre {trimestre + 4} (Año {2 + (trimestre // 4)}) ---")
+    mantenimiento = int(input("Incremento en gasto de mantenimiento: "))
+    marketing = int(input("Incremento en gasto de marketing: "))
+    precio = int(input("Nuevo precio del servicio: "))
+    inversion = int(input("Inversión en capital: "))
+
+    empresa.ajustar_variables(mantenimiento, marketing, precio, inversion)
+    if not empresa.simular_trimestre():
+        break
+
